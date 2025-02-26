@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Note, ActionItem } from '@/types';
+import { Note, ActionItem, MedicalSection } from '@/types';
 import notesDb from '@/lib/db';
+import MedicalNoteView from './MedicalNoteView';
 
 interface NoteDetailProps {
   note: Note;
@@ -15,6 +16,10 @@ const NoteDetail: React.FC<NoteDetailProps> = ({ note, onClose, onUpdate }) => {
   const [actionItems, setActionItems] = useState<ActionItem[]>(
     note.metadata.actionItems || []
   );
+
+  // Check if this is a medical note
+  const isMedicalNote = note.metadata.isMedicalNote;
+  const medicalSections = note.metadata.medicalSections;
 
   // Format date for display
   const formatDate = (date: Date): string => {
@@ -81,7 +86,7 @@ const NoteDetail: React.FC<NoteDetailProps> = ({ note, onClose, onUpdate }) => {
         {/* Header */}
         <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
           <h2 className="text-2xl font-semibold">
-            {editMode ? 'Edit Note' : 'Note Details'}
+            {editMode ? 'Edit Note' : (isMedicalNote ? 'Medical Note Details' : 'Note Details')}
           </h2>
           <div className="flex gap-2">
             {editMode ? (
@@ -150,6 +155,13 @@ const NoteDetail: React.FC<NoteDetailProps> = ({ note, onClose, onUpdate }) => {
             )}
           </div>
           
+          {/* Medical Sections - Only displayed for medical notes */}
+          {isMedicalNote && medicalSections && !editMode && (
+            <div className="mb-6">
+              <MedicalNoteView sections={medicalSections} />
+            </div>
+          )}
+          
           {/* Categories */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -168,7 +180,11 @@ const NoteDetail: React.FC<NoteDetailProps> = ({ note, onClose, onUpdate }) => {
                 {note.metadata.categories.map(category => (
                   <span 
                     key={category} 
-                    className="px-2 py-1 text-xs rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200"
+                    className={`px-2 py-1 text-xs rounded-full ${
+                      category === 'Medical' 
+                        ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200' 
+                        : 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
+                    }`}
                   >
                     {category}
                   </span>
