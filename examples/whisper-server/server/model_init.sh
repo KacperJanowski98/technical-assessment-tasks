@@ -150,26 +150,37 @@ handle_dylibs() {
     local models_dir="$2"
     local build_dir="$3"
 
-    # Find all dylibs in the build directory
-    local dylibs
-    while IFS= read -r dylib; do
-        debug_msg "Found dylib: $dylib"
-        local dylib_name
-        dylib_name=$(basename "$dylib")
-        cp "$dylib" "$models_dir/" || error_exit "Failed to copy $dylib_name"
-        success_msg "Copied $dylib_name to models directory"
-    done < <(find "$build_dir" -name "*.dylib")
+    # Find all shared libraries in the build directory
+    local libs
+    if [[ "$(uname)" == "Darwin" ]]; then
+        # macOS: Find .dylib files
+        while IFS= read -r dylib; do
+            debug_msg "Found dylib: $dylib"
+            local dylib_name
+            dylib_name=$(basename "$dylib")
+            cp "$dylib" "$models_dir/" || error_exit "Failed to copy $dylib_name"
+            success_msg "Copied $dylib_name to models directory"
+        done < <(find "$build_dir" -name "*.dylib")
+    else
+        # Linux: Find .so files
+        while IFS= read -r sofile; do
+            debug_msg "Found shared library: $sofile"
+            local sofile_name
+            sofile_name=$(basename "$sofile")
+            cp "$sofile" "$models_dir/" || error_exit "Failed to copy $sofile_name"
+            success_msg "Copied $sofile_name to models directory"
+        done < <(find "$build_dir" -name "*.so")
+    fi
 
     # Fix binary's rpath
-    install_name_tool -add_rpath "@executable_path" "$binary_path" || \
-        warn_msg "Failed to add @executable_path to rpath"
-    success_msg "Updated binary rpath"
-
-    # Check if otool is available (macOS)
-    if command -v otool >/dev/null 2>&1; then
-        debug_msg "Running otool -L on binary:"
-        otool -L "$binary_path"
+    if [[ "$(uname)" == "Darwin" ]]; then
+        install_name_tool -add_rpath "@executable_path" "$binary_path" || \
+            warn_msg "Failed to add @executable_path to rpath"
+    else
+        patchelf --set-rpath '$ORIGIN' "$binary_path" || \
+            warn_msg "Failed to set rpath with patchelf"
     fi
+    success_msg "Updated binary rpath"
 }
 
 # ---------------------
