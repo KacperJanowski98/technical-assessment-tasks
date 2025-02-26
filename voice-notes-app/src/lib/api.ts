@@ -49,31 +49,32 @@ export const api = {
   ): Promise<TranscriptionResponse> => {
     try {
       const formData = new FormData();
-      formData.append('audio', audioBlob, 'recording.wav');
-      
-      if (options?.language) {
-        formData.append('language', options.language);
-      }
-      
-      if (options?.task) {
-        formData.append('task', options.task);
-      }
-      
-      if (options?.format) {
-        formData.append('format', options.format);
-      }
+    //   formData.append('audio', audioBlob, 'recording.wav');
+        formData.append('audio', audioBlob, 'recording.webm');
 
-      const response = await axios.post(
+        if (options?.language) {
+        formData.append('language', options.language);
+        }
+        
+        if (options?.task) {
+        formData.append('task', options.task);
+        }
+        
+        if (options?.format) {
+        formData.append('format', options.format);
+        }
+
+        const response = await axios.post(
         `${API_BASE_URL}/api/transcribe`,
         formData,
         {
-          headers: {
+            headers: {
             'Content-Type': 'multipart/form-data',
-          },
+            },
         }
-      );
+        );
 
-      return response.data;
+        return response.data;
     } catch (error) {
       console.error('Transcription error:', error);
       return {
