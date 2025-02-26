@@ -51,6 +51,7 @@ A modern web application that allows users to record voice notes, automatically 
 - 🔄 Automatic transcription using Whisper model
 - 🧠 AI-powered content analysis and categorization
 - 📋 Action item extraction and organization
+- 🩺 **Medical notes classification with specialized sections**
 - 📊 Dashboard with analytics and insights
 - 🔒 Local storage for notes persistence
 - 🌐 Server health monitoring
@@ -138,6 +139,22 @@ A modern web application that allows users to record voice notes, automatically 
 - Edit notes to add or modify action items
 - Delete notes you no longer need
 
+### Medical Notes Classification
+
+This application features specialized support for medical notes:
+
+1. **Automatic Detection**: Notes with medical terminology are automatically identified
+2. **Section Classification**: Medical content is organized into five sections:
+   - Wywiad (Medical History)
+   - Badanie (Examination)
+   - Diagnoza (Diagnosis)
+   - Zalecenia (Recommendations)
+   - Kontekst (Context)
+3. **Visual Highlights**: Medical notes are visually distinct in the notes list
+4. **Specialized View**: Medical notes display sections in a color-coded interface
+
+For more details, see [MEDICAL_NOTES.md](./MEDICAL_NOTES.md)
+
 ### Dashboard
 
 - View analytics about your notes collection
@@ -153,10 +170,14 @@ voice-notes-app/
 ├── src/
 │   ├── app/               # Next.js pages using App Router
 │   ├── components/        # React components
+│   │   └── MedicalNoteView.tsx  # Medical note section display
 │   ├── hooks/             # Custom React hooks
 │   ├── lib/               # Utilities and API clients
+│   │   └── medical-classifier.ts  # Medical notes classification
 │   └── types/             # TypeScript type definitions
+│       └── medical.ts     # Medical note type definitions
 ├── .env.local             # Environment variables
+├── MEDICAL_NOTES.md       # Medical classification documentation
 └── next.config.js         # Next.js configuration
 ```
 
@@ -166,6 +187,7 @@ voice-notes-app/
 - **Mock AI Analysis**: Implementing a client-side analysis function to simulate AI categorization.
 - **Whisper Integration**: Using the provided whisper-server as the backend for transcription.
 - **Responsive Design**: Using Tailwind CSS for a mobile-first responsive interface.
+- **Medical Classification**: Implementing pattern-based classification for medical notes using the medical.ts module from the whisper-server example.
 
 ## Trade-offs and Limitations
 
@@ -173,16 +195,18 @@ voice-notes-app/
 - **Persistence**: localStorage has size limitations and is cleared if the browser storage is cleared.
 - **Transcription Accuracy**: The accuracy depends on the chosen Whisper model.
 - **Security**: This implementation focuses on functionality rather than security.
+- **Medical Classification**: The current keyword-based classification is simplistic and could be improved with machine learning.
 
 ## Future Improvements
 
 With more time, I would add:
 - User authentication and server-side storage
 - Real AI integration for better analysis
-- Export to external services (Notion, Todoist, etc.)
+- Export to electronic health record systems for medical notes
 - Mobile app using React Native
 - End-to-end encryption for sensitive data
 - Improved voice recording controls and quality
+- Machine learning-based classification for medical notes
 
 ## License
 
