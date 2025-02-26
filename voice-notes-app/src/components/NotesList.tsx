@@ -63,7 +63,7 @@ const NotesList: React.FC<NotesListProps> = ({ onSelectNote }) => {
             Filter by Category
           </label>
           <select 
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-black"
             value={selectedCategory || ''}
             onChange={(e) => setSelectedCategory(e.target.value || null)}
           >
@@ -81,7 +81,7 @@ const NotesList: React.FC<NotesListProps> = ({ onSelectNote }) => {
             Sort By
           </label>
           <select 
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-black"
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as 'newest' | 'oldest')}
           >
