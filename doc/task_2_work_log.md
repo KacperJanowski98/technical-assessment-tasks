@@ -94,3 +94,23 @@ Podsumowanie pierwszej iteracji mojej pracy:
 - Poniedziałek - zapoznanie z zadaniem - około 1h
 - Wtorek - uświadomienie sobie, że nie znam typescript, zapoznanie z nowym modelem Claude 3.7 Sonnet oraz agentem do kodowania Claude Code (zapisanie się na listę oczekujących, aby przetestować jego działanie), konfiguracja Claude Desktop z serwerami MCP - około 3h
 - Środa - rozpoczecie pracy nad zadaniem 2, wykonanie tego co zostało opisane powyżej zajęło około 4h w tym 1h rozwiązywałem wspomniany problem z whisper-cli
+
+# Druga iteracja
+
+- Rozwiązałem problem z białym kolorem tekstu na białym tle.
+
+Następnie podjąłem decyzję, że na potrzeby tego prototypownia najważniejsze jest działanie zarówno transkrypcji jak i klasyfikacji notatek. Przy testach manualnych i próbach pisania testów jednostkowych, pojawił się problem z określeniem kategorii notatek. Ma to związek z tym, że kategorie są w języku angielskim a notatki są po polsku. Musze to zmienić.
+
+Dodatkowo zauważyłem, że nie mam klasyfikacji medycznej, poprosiłem czat, aby je dla mnie dodał. 
+
+**Do zastanowienia:**
+
+Teraz mam polskie klasyfikację odnośnie medycyny a ogólne kategorie mam po angielsku. Jako że startup dotyczy weterynarii, w kolejnej iteracji pozbędę się ogólnej klasyfikacji a zostawię tylko klasyfikację medyczną, po polsku. Dodam również testy.
+
+**Obserwacje:**
+
+Tym razem poprosiłem czar z połączonymi serwerami MCP aby sam modyfikował mój kod w repozytorium. Wychodzi mu to nawet dobrze. Najgorszy przypadek jest, gdy w czasie jego pracy nad plikami zostanie osiągnięty limit kontekstu, wtedy po ponowieniu jego pracy powstają błędy. Dodatkowo czasem występują jakieś błędy z serwerów MCP, które czasem powodują problem a czasem nie. Na co można zwrócić uwagę, to że wszystkie zmiany rozbijane są na osobne commity, rozumiem to, ale dobrze na koniec je scalić jak bardzo się da. 
+
+**Podsumowanie:**
+
+Na testy i modyfikacje poświęciłem ponad 2h, sporo czasu zajęły testy, których finalnie nie zaimplementowałem. Lepiej początkowo poprawić klasyfikowanie.
