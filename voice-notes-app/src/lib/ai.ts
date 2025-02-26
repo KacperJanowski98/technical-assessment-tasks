@@ -1,8 +1,10 @@
 import type { ContentAnalysis } from '@/types';
+import { enhanceWithMedicalClassification } from './medical-classifier';
 
 const CATEGORIES = [
   'Work', 'Personal', 'Meeting', 'Reminder', 'Idea', 
-  'Task', 'Project', 'Learning', 'Finance', 'Health'
+  'Task', 'Project', 'Learning', 'Finance', 'Health',
+  'Medical' // Added medical category
 ];
 
 /**
@@ -24,7 +26,7 @@ export const analyzeContent = async (text: string): Promise<ContentAnalysis> => 
       categories.push('Meeting');
     }
     
-    if (text.toLowerCase().includes('remember') || text.toLowerCase().includes('don\'t forget')) {
+    if (text.toLowerCase().includes('remember') || text.toLowerCase().includes('don\\'t forget')) {
       categories.push('Reminder');
     }
     
@@ -42,7 +44,7 @@ export const analyzeContent = async (text: string): Promise<ContentAnalysis> => 
   const actionItems = [];
   
   // Look for tasks with "need to", "have to", "should", "must"
-  const taskRegex = /(need to|have to|should|must|todo|to do|task)\s+([^.!?]+[.!?])/gi;
+  const taskRegex = /(need to|have to|should|must|todo|to do|task)\\s+([^.!?]+[.!?])/gi;
   let taskMatch;
   while ((taskMatch = taskRegex.exec(text)) !== null) {
     actionItems.push({
@@ -53,7 +55,7 @@ export const analyzeContent = async (text: string): Promise<ContentAnalysis> => 
   }
   
   // Look for events with time/date indicators
-  const eventRegex = /(meeting|call|appointment|event)\s+([^.!?]+[.!?])/gi;
+  const eventRegex = /(meeting|call|appointment|event)\\s+([^.!?]+[.!?])/gi;
   let eventMatch;
   while ((eventMatch = eventRegex.exec(text)) !== null) {
     actionItems.push({
@@ -64,7 +66,7 @@ export const analyzeContent = async (text: string): Promise<ContentAnalysis> => 
   }
   
   // Look for reminders
-  const reminderRegex = /(remember|don't forget|reminder|remind me)\s+([^.!?]+[.!?])/gi;
+  const reminderRegex = /(remember|don't forget|reminder|remind me)\\s+([^.!?]+[.!?])/gi;
   let reminderMatch;
   while ((reminderMatch = reminderRegex.exec(text)) !== null) {
     actionItems.push({
@@ -94,7 +96,7 @@ export const analyzeContent = async (text: string): Promise<ContentAnalysis> => 
   sentiment = Math.max(-1, Math.min(1, sentiment));
   
   // Generate suggested tags based on content
-  const words = textLower.split(/\s+/);
+  const words = textLower.split(/\\s+/);
   const commonWords = ['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'with'];
   
   const possibleTags = words
@@ -107,10 +109,14 @@ export const analyzeContent = async (text: string): Promise<ContentAnalysis> => 
     .slice(0, 5)
     .map(tag => tag.charAt(0).toUpperCase() + tag.slice(1)); // Capitalize first letter
   
-  return {
+  // Create the base analysis
+  const baseAnalysis: ContentAnalysis = {
     categories,
     sentiment,
     actionItems,
     suggestedTags
   };
+  
+  // Enhance with medical classification if needed
+  return enhanceWithMedicalClassification(baseAnalysis, text);
 };
