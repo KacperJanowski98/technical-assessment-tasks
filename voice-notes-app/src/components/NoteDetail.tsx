@@ -141,7 +141,7 @@ const NoteDetail: React.FC<NoteDetailProps> = ({ note, onClose, onUpdate }) => {
               <textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md h-32"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md h-32 text-black"
               />
             ) : (
               <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-md whitespace-pre-wrap">
@@ -161,7 +161,7 @@ const NoteDetail: React.FC<NoteDetailProps> = ({ note, onClose, onUpdate }) => {
                 value={categories}
                 onChange={(e) => setCategories(e.target.value)}
                 placeholder="Separate categories with commas"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-black"
               />
             ) : (
               <div className="flex flex-wrap gap-2">
@@ -205,7 +205,7 @@ const NoteDetail: React.FC<NoteDetailProps> = ({ note, onClose, onUpdate }) => {
                           <select
                             value={item.type}
                             onChange={(e) => handleActionItemChange(index, 'type', e.target.value)}
-                            className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md"
+                            className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-black"
                           >
                             <option value="task">Task</option>
                             <option value="event">Event</option>
@@ -214,7 +214,7 @@ const NoteDetail: React.FC<NoteDetailProps> = ({ note, onClose, onUpdate }) => {
                           <select
                             value={item.priority}
                             onChange={(e) => handleActionItemChange(index, 'priority', parseInt(e.target.value))}
-                            className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md"
+                            className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-black"
                           >
                             <option value="1">Low Priority</option>
                             <option value="2">Medium Priority</option>
@@ -233,7 +233,7 @@ const NoteDetail: React.FC<NoteDetailProps> = ({ note, onClose, onUpdate }) => {
                         <textarea
                           value={item.content}
                           onChange={(e) => handleActionItemChange(index, 'content', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-black"
                           rows={2}
                         />
                       </div>
