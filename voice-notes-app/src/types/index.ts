@@ -1,4 +1,6 @@
 // src/types/index.ts
+import { MedicalSection } from './medical';
+
 // Note model
 export interface Note {
   id: string;
@@ -10,6 +12,8 @@ export interface Note {
     categories: string[];
     confidence: number;
     actionItems?: ActionItem[];
+    medicalSections?: Record<MedicalSection, string[]>; // Added medical sections
+    isMedicalNote?: boolean; // Flag to identify medical notes
   };
   exports: NoteExport[];
 }
@@ -37,6 +41,8 @@ export interface ContentAnalysis {
     suggestedPriority: number;
   }[];
   suggestedTags: string[];
+  medicalSections?: Record<MedicalSection, string[]>; // Added medical sections
+  isMedicalNote?: boolean; // Flag to identify medical notes
 }
 
 // API Responses
@@ -51,3 +57,6 @@ export interface TranscriptionResult {
     details?: Record<string, any>;
   };
 }
+
+// Re-export medical types
+export * from './medical';
