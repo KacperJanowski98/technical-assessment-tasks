@@ -46,7 +46,10 @@ const NoteDetail: React.FC<NoteDetailProps> = ({ note, onClose, onUpdate }) => {
       metadata: {
         ...note.metadata,
         categories: categoriesArray,
-        actionItems: [...actionItems]
+        actionItems: [...actionItems],
+        // Preserve the medical sections and flag when editing
+        medicalSections: note.metadata.medicalSections,
+        isMedicalNote: note.metadata.isMedicalNote
       }
     };
 
