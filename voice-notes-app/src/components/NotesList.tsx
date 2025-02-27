@@ -1,3 +1,4 @@
+// Updated NotesList.tsx component
 import React, { useState, useEffect } from 'react';
 import { Note } from '@/types';
 import notesDb from '@/lib/db';
@@ -107,6 +108,7 @@ const NotesList: React.FC<NotesListProps> = ({ onSelectNote }) => {
             // Check if it's a medical note
             const isMedicalNote = note.metadata.isMedicalNote;
             const hasMedicalCategory = note.metadata.categories.includes('Medical');
+            const medicalSections = note.metadata.medicalSections;
             
             return (
               <div 
@@ -130,6 +132,36 @@ const NotesList: React.FC<NotesListProps> = ({ onSelectNote }) => {
                     <p className="line-clamp-2 text-gray-900 dark:text-white">
                       {note.content}
                     </p>
+                    
+                    {/* Display Medical Sections in Preview (New Addition) */}
+                    {isMedicalNote && medicalSections && (
+                      <div className="mt-3 mb-2 border-t border-gray-200 dark:border-gray-700 pt-2">
+                        <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Medical Sections:
+                        </div>
+                        <div className="space-y-2">
+                          {Object.entries(medicalSections)
+                            .filter(([_, lines]) => lines.length > 0)
+                            .map(([section, lines]) => (
+                              <div key={section} className="text-sm">
+                                <span className={`inline-block px-2 py-0.5 text-xs font-medium rounded 
+                                  ${section === 'Wywiad' ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200' :
+                                    section === 'Badanie' ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' :
+                                    section === 'Diagnoza' ? 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200' :
+                                    section === 'Zalecenia' ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200' :
+                                    'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
+                                  }`}
+                                >
+                                  {section}
+                                </span>
+                                <span className="ml-2 text-gray-600 dark:text-gray-300 line-clamp-1">
+                                  {lines[0]}{lines.length > 1 ? ` (+${lines.length - 1} more)` : ''}
+                                </span>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
                     
                     <div className="mt-2 flex items-center">
                       <span className="text-sm text-gray-500 dark:text-gray-400">
