@@ -114,3 +114,23 @@ Tym razem poprosiłem czar z połączonymi serwerami MCP aby sam modyfikował m�
 **Podsumowanie:**
 
 Na testy i modyfikacje poświęciłem ponad 2h, sporo czasu zajęły testy, których finalnie nie zaimplementowałem. Lepiej początkowo poprawić klasyfikowanie.
+
+# trzecia iteracja - 27.02
+
+Przejrzałem aplikacje i wymagania, gdzie znalazłem brak kategoryzacji zawartości notatki. W tej iteracji pracy postanowiłem to dodać jako punkt konieczny. Dodałem również testy dla tej funkcjonalności.
+
+Kolejne kroki:
+
+- Automatyczna transkrypcja.
+- Dostosowanie modelu transkrypcji.
+- Rozwinięcie dashboardu - jeszcze do przemyślenia.
+- Sprawdzenie opisów oraz tego czy cała konfiguracja projektu zadziała “od zera” - w czasie prac wyszło trochę zmian i wymagane jest sprawdzenie, czy konfiguracja projektu zadziała.
+
+Coś, co mogłoby być dodane:
+
+- Wybór, z jakiego modelu korzystamy - Aczykolwiek końcowy użytkownik raczej nie będzie zainteresowany taką opcją, może jakby był panel administratora to tak.
+- W tym momencie zauważyłem, że zapisana lokalnie notatka nie zawiera informacji o kategoriach zawartości oraz klasyfikacji. Na potrzeby “szybkiego” POC myślę, że można temu dać niższy priorytet.
+
+**Podsumowanie:**
+
+Wykonanie zmian i testów zajęło mi około 2h.
