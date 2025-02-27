@@ -38,14 +38,19 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onTranscriptionComplete }
     try {
       const blob = await stopRecording();
       console.log('Recording stopped, blob size:', blob.size);
+      
+      // Automatically start transcription after recording stops
+      if (blob) {
+        await handleTranscribe(blob);
+      }
     } catch (err) {
       console.error('Error stopping recording:', err);
       setError('Failed to stop recording');
     }
   };
 
-  const handleTranscribe = async () => {
-    if (!audioBlob) {
+  const handleTranscribe = async (blobToTranscribe = audioBlob) => {
+    if (!blobToTranscribe) {
       setError('No recording available to transcribe');
       return;
     }
@@ -54,7 +59,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onTranscriptionComplete }
     setError(null);
 
     try {
-      const response = await api.transcribeAudio(audioBlob);
+      const response = await api.transcribeAudio(blobToTranscribe);
       
       if (response.success && response.data) {
         setTranscription(response.data.rawText);
@@ -112,7 +117,13 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onTranscriptionComplete }
           
           <div className="flex flex-col">
             <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-              {isRecording ? 'Recording...' : audioBlob ? 'Recording complete' : 'Ready to record'}
+              {isRecording 
+                ? 'Recording...' 
+                : isProcessing 
+                  ? 'Transcribing...' 
+                  : audioBlob 
+                    ? 'Recording complete' 
+                    : 'Ready to record'}
             </span>
             <span className="text-lg font-semibold">
               {formatTime(recordingTime)}
@@ -122,40 +133,23 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onTranscriptionComplete }
 
         <div className="flex gap-2">
           {audioBlob && (
-            <>
-              <button
-                onClick={resetRecording}
-                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-md transition-colors"
-                disabled={isRecording || isProcessing}
-              >
-                Reset
-              </button>
-              
-              <button
-                onClick={handleTranscribe}
-                className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md transition-colors flex items-center gap-2"
-                disabled={isRecording || isProcessing}
-              >
-                {isProcessing ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Processing...
-                  </>
-                ) : (
-                  'Transcribe'
-                )}
-              </button>
-            </>
+            <button
+              onClick={resetRecording}
+              className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-md transition-colors"
+              disabled={isRecording || isProcessing}
+            >
+              Reset
+            </button>
           )}
         </div>
       </div>
 
       {audioUrl && (
         <div className="mb-6">
-          <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Preview</p>
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+            Preview
+            {isProcessing && <span className="ml-2 text-blue-500">(Transcribing...)</span>}
+          </p>
           <audio src={audioUrl} controls className="w-full" />
         </div>
       )}
@@ -166,6 +160,16 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onTranscriptionComplete }
           <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-md whitespace-pre-wrap">
             {transcription}
           </div>
+        </div>
+      )}
+
+      {isProcessing && (
+        <div className="mt-4 flex items-center gap-2 text-blue-500">
+          <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span>Analyzing your voice note...</span>
         </div>
       )}
     </div>
