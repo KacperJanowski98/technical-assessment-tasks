@@ -1,122 +1,142 @@
 import type { ContentAnalysis } from '@/types';
-import { enhanceWithMedicalClassification } from './medical-classifier';
+import { MedicalSection, SECTION_KEYWORDS } from '@/types';
 
-const CATEGORIES = [
-  'Work', 'Personal', 'Meeting', 'Reminder', 'Idea', 
-  'Task', 'Project', 'Learning', 'Finance', 'Health',
-  'Medical' // Added medical category
+// Categories specific to veterinary medicine in Polish
+const VET_CATEGORIES = [
+  'Badanie', 'Diagnoza', 'Leczenie', 'Szczepienie', 
+  'Operacja', 'Recepta', 'Kontrola', 'Nagły przypadek',
+  'Wyniki laboratoryjne', 'Żywienie', 'Zachowanie', 'Profilaktyka'
 ];
 
 /**
- * A mock AI analysis service for notes 
- * In a real application, this would connect to an AI service
+ * Analyzes text content and classifies it into veterinary medical sections
+ * based on keywords defined in SECTION_KEYWORDS
+ */
+function classifyVetContent(text: string): Record<MedicalSection, string[]> {
+  // Initialize all sections with empty arrays
+  const sections: Record<MedicalSection, string[]> = {
+    Wywiad: [],
+    Badanie: [],
+    Diagnoza: [],
+    Zalecenia: [],
+    Kontekst: [],
+  };
+
+  // Split text into sentences or lines
+  const lines = text
+    .split(/[.!?]\s+|\n+/)
+    .map(line => line.trim())
+    .filter(line => line.length > 0);
+
+  // Classify each line
+  lines.forEach(line => {
+    const lowerLine = line.toLowerCase();
+    
+    // Find the most relevant section for this line based on keywords
+    let assignedSection: MedicalSection = 'Wywiad'; // Default
+    let maxMatches = 0;
+    
+    Object.entries(SECTION_KEYWORDS).forEach(([section, keywords]) => {
+      const matches = keywords.filter(keyword => lowerLine.includes(keyword)).length;
+      if (matches > maxMatches) {
+        maxMatches = matches;
+        assignedSection = section as MedicalSection;
+      }
+    });
+    
+    // Add the line to the assigned section
+    sections[assignedSection].push(line);
+  });
+
+  return sections;
+}
+
+/**
+ * A specialized analysis service for veterinary notes in Polish
  */
 export const analyzeContent = async (text: string): Promise<ContentAnalysis> => {
   // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 1500));
   
-  // Basic keyword matching for categories
-  const categories = CATEGORIES.filter(category => 
+  // Classify content into veterinary sections
+  const medicalSections = classifyVetContent(text);
+  
+  // Identify specific categories based on content
+  const categories = VET_CATEGORIES.filter(category => 
     text.toLowerCase().includes(category.toLowerCase())
   );
   
-  // If no categories match, add some based on common patterns
+  // If no specific categories match, add based on section content
   if (categories.length === 0) {
-    if (text.toLowerCase().includes('meeting') || text.toLowerCase().includes('discuss')) {
-      categories.push('Meeting');
+    if (medicalSections['Diagnoza'].length > 0) {
+      categories.push('Diagnoza');
     }
-    
-    if (text.toLowerCase().includes('remember') || text.toLowerCase().includes("don't forget")) {
-      categories.push('Reminder');
+    if (medicalSections['Zalecenia'].length > 0) {
+      categories.push('Leczenie');
     }
-    
-    if (text.toLowerCase().includes('idea') || text.toLowerCase().includes('thought')) {
-      categories.push('Idea');
-    }
-    
-    // Default category if nothing else matches
+    // Add default category if still empty
     if (categories.length === 0) {
-      categories.push('Personal');
+      categories.push('Badanie');
     }
   }
   
-  // Extract action items using simple heuristics
+  // Extract action items (adapted for veterinary context in Polish)
   const actionItems = [];
   
-  // Look for tasks with "need to", "have to", "should", "must"
-  const taskRegex = /(need to|have to|should|must|todo|to do|task)\s+([^.!?]+[.!?])/gi;
-  let taskMatch;
-  while ((taskMatch = taskRegex.exec(text)) !== null) {
+  // Prescription/medication items
+  const medicationRegex = /(przepis|lek|dawkowa|podawa|tabletk|zastrzyk|aplikowa|maść)(?:.*?)([^.!?]+[.!?])/gi;
+  let medicationMatch;
+  while ((medicationMatch = medicationRegex.exec(text)) !== null) {
     actionItems.push({
       type: 'task',
-      content: taskMatch[2].trim(),
-      suggestedPriority: Math.floor(Math.random() * 3) + 1 // Priority from 1-3
+      content: medicationMatch[2].trim(),
+      suggestedPriority: 3 // High priority for medications
     });
   }
   
-  // Look for events with time/date indicators
-  const eventRegex = /(meeting|call|appointment|event)\s+([^.!?]+[.!?])/gi;
-  let eventMatch;
-  while ((eventMatch = eventRegex.exec(text)) !== null) {
+  // Follow-up appointments
+  const followupRegex = /(kontrola|wizyta|ponowne|za\s+\d+\s+(?:dzień|dni|tydzień|tygodni|miesiąc|miesięcy))(?:.*?)([^.!?]+[.!?])/gi;
+  let followupMatch;
+  while ((followupMatch = followupRegex.exec(text)) !== null) {
     actionItems.push({
       type: 'event',
-      content: eventMatch[2].trim(),
-      suggestedPriority: Math.floor(Math.random() * 3) + 1
+      content: followupMatch[2].trim(),
+      suggestedPriority: 2
     });
   }
   
-  // Look for reminders
-  const reminderRegex = /(remember|don't forget|reminder|remind me)\s+([^.!?]+[.!?])/gi;
-  let reminderMatch;
-  while ((reminderMatch = reminderRegex.exec(text)) !== null) {
+  // Monitoring instructions
+  const monitorRegex = /(obserwowa|monitorowa|sprawdza|jeśli|gdyby|pilnowa)(?:.*?)([^.!?]+[.!?])/gi;
+  let monitorMatch;
+  while ((monitorMatch = monitorRegex.exec(text)) !== null) {
     actionItems.push({
       type: 'reminder',
-      content: reminderMatch[2].trim(),
-      suggestedPriority: Math.floor(Math.random() * 3) + 1
+      content: monitorMatch[2].trim(),
+      suggestedPriority: 2
     });
   }
   
-  // Generate sentiment score (-1 to 1)
-  // Simple heuristic based on positive/negative words
-  const positiveWords = ['good', 'great', 'excellent', 'amazing', 'happy', 'positive', 'pleased'];
-  const negativeWords = ['bad', 'terrible', 'awful', 'sad', 'negative', 'unhappy', 'problem'];
-  
-  let sentiment = 0;
-  const textLower = text.toLowerCase();
-  
-  positiveWords.forEach(word => {
-    if (textLower.includes(word)) sentiment += 0.2;
-  });
-  
-  negativeWords.forEach(word => {
-    if (textLower.includes(word)) sentiment -= 0.2;
-  });
-  
-  // Clamp sentiment between -1 and 1
-  sentiment = Math.max(-1, Math.min(1, sentiment));
-  
   // Generate suggested tags based on content
-  const words = textLower.split(/\s+/);
-  const commonWords = ['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'with'];
+  const words = text.toLowerCase().split(/\s+/);
+  const commonWords = ['to', 'jest', 'i', 'w', 'na', 'z', 'o', 'do', 'się', 'nie', 'dla', 'przez'];
   
   const possibleTags = words
-    .filter(word => word.length > 3) // Only words longer than 3 characters
-    .filter(word => !commonWords.includes(word)) // Remove common words
-    .map(word => word.replace(/[^a-z0-9]/g, '')); // Remove punctuation
+    .filter(word => word.length > 3)
+    .filter(word => !commonWords.includes(word))
+    .map(word => word.replace(/[^a-ząęćłńóśźż0-9]/g, ''));
   
   // Get unique words and pick up to 5 for tags
   const suggestedTags = [...new Set(possibleTags)]
     .slice(0, 5)
-    .map(tag => tag.charAt(0).toUpperCase() + tag.slice(1)); // Capitalize first letter
+    .map(tag => tag.charAt(0).toUpperCase() + tag.slice(1));
   
-  // Create the base analysis
-  const baseAnalysis: ContentAnalysis = {
+  // Create the analysis result focused on veterinary medicine
+  return {
     categories,
-    sentiment,
+    sentiment: 0, // Neutral sentiment for medical notes
     actionItems,
-    suggestedTags
+    suggestedTags,
+    medicalSections,
+    isMedicalNote: true // Always true as we're focusing only on veterinary notes
   };
-  
-  // Enhance with medical classification if needed
-  return enhanceWithMedicalClassification(baseAnalysis, text);
 };
