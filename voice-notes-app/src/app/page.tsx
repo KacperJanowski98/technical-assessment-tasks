@@ -42,7 +42,11 @@ export default function Home() {
             type: item.type as 'task' | 'event' | 'reminder',
             content: item.content,
             priority: item.suggestedPriority
-          }))
+          })),
+          // Add the medical sections from the analysis
+          medicalSections: analysis.medicalSections,
+          // Add the flag to identify medical notes
+          isMedicalNote: analysis.isMedicalNote
         },
         exports: []
       };
