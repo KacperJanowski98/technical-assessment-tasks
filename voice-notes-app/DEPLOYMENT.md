@@ -10,6 +10,8 @@ This guide will help you deploy the Smart Voice Notes Organizer application, whi
 - pnpm (recommended package manager)
 - Git
 - FFmpeg installed on your system
+- A modern browser with Web Speech API support (Chrome, Firefox, Edge recommended)
+- Microphone access permissions enabled in your browser
 
 ## Step 1: Set Up and Run the Whisper Server
 
@@ -127,6 +129,18 @@ For a production deployment, follow these steps:
 
 - Edit `.env.local` to change the Whisper server URL
 - Modify `lib/api.ts` to change API endpoints or behavior
+
+## Usage Notes
+
+### Voice Recording Workflow
+
+1. Click the microphone button to start recording
+2. Speak your note clearly
+3. Click the stop button when finished
+4. The transcription will start automatically
+5. When transcription completes, the AI analysis will categorize your content
+
+Note: Your browser will request permission to access your microphone the first time you record.
 
 ## Troubleshooting
 
