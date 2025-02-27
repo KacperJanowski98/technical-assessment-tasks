@@ -41,14 +41,18 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 # Smart Voice Notes Organizer
 
-![Smart Voice Notes Organizer](https://via.placeholder.com/1200x600?text=Smart+Voice+Notes+Organizer)
+![Smart Voice Notes Organizer main](../doc/images/task2-main.png)
+
+![Smart Voice Notes Organizer edit](../doc/images/task2-edit.png)
+
+![Smart Voice Notes Organizer dashboard](../doc/images/task2-dashboard.png)
 
 A modern web application that allows users to record voice notes, automatically transcribes them, uses AI to analyze and categorize the content, and organizes them into a structured format. This is an implementation of Task 2 from the technical assessment tasks.
 
 ## Features
 
 - 🎙️ Real-time voice recording with audio preview
-- 🔄 Automatic transcription using Whisper model
+- 🔄 Automatic transcription using Whisper model (triggers immediately after recording stops)
 - 🧠 AI-powered content analysis and categorization
 - 📋 Action item extraction and organization
 - 🩺 **Medical notes classification with specialized sections**
@@ -59,9 +63,10 @@ A modern web application that allows users to record voice notes, automatically 
 ## Tech Stack
 
 - **Frontend**:
-  - Next.js 14 with App Router
+  - Next.js 15 with App Router
   - TypeScript
   - Tailwind CSS
+  - React 19
   - React Hooks for state management
 
 - **Backend**:
@@ -77,6 +82,8 @@ A modern web application that allows users to record voice notes, automatically 
 - pnpm (recommended package manager)
 - Git
 - FFmpeg installed on your system
+- A modern browser with Web Speech API support (Chrome, Firefox, Edge recommended)
+- Microphone access permissions enabled in your browser
 
 ### Installation
 
@@ -128,8 +135,9 @@ A modern web application that allows users to record voice notes, automatically 
 1. Click the microphone button to start recording
 2. Speak your note clearly
 3. Click the stop button when finished
-4. Click "Transcribe" to process the recording
-5. Wait for the AI to analyze and categorize the content
+4. Wait for automatic transcription and AI analysis of the content
+
+> **Note:** Transcription occurs automatically after stopping the recording. Your browser will request permission to access your microphone when you first use the recorder.
 
 ### Managing Notes
 
@@ -166,19 +174,51 @@ For more details, see [MEDICAL_NOTES.md](./MEDICAL_NOTES.md)
 
 ```
 voice-notes-app/
-├── public/
+├── public/                         # Static assets
 ├── src/
-│   ├── app/               # Next.js pages using App Router
-│   ├── components/        # React components
-│   │   └── MedicalNoteView.tsx  # Medical note section display
-│   ├── hooks/             # Custom React hooks
-│   ├── lib/               # Utilities and API clients
-│   │   └── medical-classifier.ts  # Medical notes classification
-│   └── types/             # TypeScript type definitions
-│       └── medical.ts     # Medical note type definitions
-├── .env.local             # Environment variables
-├── MEDICAL_NOTES.md       # Medical classification documentation
-└── next.config.js         # Next.js configuration
+│   ├── app/                        # Next.js app directory (App Router)
+│   │   ├── __tests__/              # Page-level tests
+│   │   ├── api/                    # API routes
+│   │   ├── dashboard/              # Dashboard page
+│   │   │   └── page.tsx            # Dashboard view
+│   │   ├── favicon.ico             # Site favicon
+│   │   ├── globals.css             # Global CSS
+│   │   ├── layout.tsx              # Root layout
+│   │   ├── metadata.ts             # Page metadata
+│   │   └── page.tsx                # Home page
+│   │
+│   ├── components/                 # React components
+│   │   ├── MedicalNoteView.tsx     # Medical note display
+│   │   ├── NoteDetail.tsx          # Note detail view
+│   │   ├── NotesList.tsx           # Notes list component
+│   │   ├── ServerHealthCheck.tsx   # Whisper server status
+│   │   └── VoiceRecorder.tsx       # Voice recording component
+│   │
+│   ├── hooks/                      # Custom React hooks
+│   │   └── useVoiceRecorder.ts     # Voice recording hook
+│   │
+│   ├── lib/                        # Utility functions & services
+│   │   ├── ai.ts                   # AI analysis module
+│   │   ├── api.ts                  # API client for Whisper server
+│   │   └── db.ts                   # Client-side storage
+│   │
+│   └── types/                      # TypeScript type definitions
+│       ├── index.ts                # Main type exports
+│       └── medical.ts              # Medical note types
+│
+├── .env.local                      # Environment variables (create this)
+├── .gitignore                      # Git ignore rules
+├── DEPLOYMENT.md                   # Deployment documentation
+├── MEDICAL_NOTES.md                # Medical notes documentation
+├── eslint.config.mjs               # ESLint configuration
+├── jest.config.js                  # Jest test configuration
+├── jest.setup.js                   # Jest setup
+├── next.config.ts                  # Next.js configuration
+├── package-lock.json               # NPM lock file
+├── package.json                    # Project dependencies
+├── postcss.config.mjs              # PostCSS configuration
+├── tailwind.config.ts              # Tailwind CSS configuration
+└── tsconfig.json                   # TypeScript configuration
 ```
 
 ## Implementation Decisions
