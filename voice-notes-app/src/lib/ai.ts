@@ -2,7 +2,7 @@ import type { ContentAnalysis } from '@/types';
 import { MedicalSection, SECTION_KEYWORDS } from '@/types';
 
 // Categories specific to veterinary medicine in Polish
-const VET_CATEGORIES = [
+export const VET_CATEGORIES = [
   'Badanie', 'Diagnoza', 'Leczenie', 'Szczepienie', 
   'Operacja', 'Recepta', 'Kontrola', 'Nagły przypadek',
   'Wyniki laboratoryjne', 'Żywienie', 'Zachowanie', 'Profilaktyka'

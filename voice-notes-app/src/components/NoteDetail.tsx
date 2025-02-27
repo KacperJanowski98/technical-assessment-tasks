@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Note, ActionItem, MedicalSection } from '@/types';
 import notesDb from '@/lib/db';
 import MedicalNoteView from './MedicalNoteView';
+import { VET_CATEGORIES } from '@/lib/ai'; // Import the existing categories
 
 interface NoteDetailProps {
   note: Note;
@@ -12,14 +13,29 @@ interface NoteDetailProps {
 const NoteDetail: React.FC<NoteDetailProps> = ({ note, onClose, onUpdate }) => {
   const [editMode, setEditMode] = useState(false);
   const [content, setContent] = useState(note.content);
-  const [categories, setCategories] = useState(note.metadata.categories.join(', '));
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(
+    note.metadata.categories || []
+  );
   const [actionItems, setActionItems] = useState<ActionItem[]>(
     note.metadata.actionItems || []
   );
+  
+  // State for medical sections editing
+  const [medicalSections, setMedicalSections] = useState<Record<MedicalSection, string[]>>(
+    note.metadata.medicalSections || {
+      Wywiad: [],
+      Badanie: [],
+      Diagnoza: [],
+      Zalecenia: [],
+      Kontekst: [],
+    }
+  );
+
+  // State for custom category input
+  const [customCategory, setCustomCategory] = useState("");
 
   // Check if this is a medical note
   const isMedicalNote = note.metadata.isMedicalNote;
-  const medicalSections = note.metadata.medicalSections;
 
   // Format date for display
   const formatDate = (date: Date): string => {
@@ -32,23 +48,60 @@ const NoteDetail: React.FC<NoteDetailProps> = ({ note, onClose, onUpdate }) => {
     }).format(date);
   };
 
-  const handleSave = () => {
-    // Process categories into an array
-    const categoriesArray = categories
-      .split(',')
-      .map(category => category.trim())
-      .filter(category => category.length > 0);
+  // Handle category checkbox change
+  const handleCategoryChange = (category: string, checked: boolean) => {
+    if (checked) {
+      setSelectedCategories(prev => [...prev, category]);
+    } else {
+      setSelectedCategories(prev => prev.filter(cat => cat !== category));
+    }
+  };
 
+  // Add custom category
+  const handleAddCustomCategory = () => {
+    if (customCategory.trim() && !selectedCategories.includes(customCategory.trim())) {
+      setSelectedCategories(prev => [...prev, customCategory.trim()]);
+      setCustomCategory("");
+    }
+  };
+
+  // Update section content
+  const handleSectionChange = (section: MedicalSection, sectionContent: string) => {
+    const lines = sectionContent
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0);
+      
+    setMedicalSections(prev => ({
+      ...prev,
+      [section]: lines
+    }));
+  };
+
+  // Generate full content from sections for non-sectioned editing
+  useEffect(() => {
+    if (isMedicalNote && note.metadata.medicalSections) {
+      // Update the full content whenever sections change
+      const allContent = Object.entries(medicalSections)
+        .filter(([_, lines]) => lines.length > 0)
+        .flatMap(([_, lines]) => lines)
+        .join('. ');
+        
+      setContent(allContent);
+    }
+  }, [isMedicalNote, medicalSections]);
+
+  const handleSave = () => {
     // Create updated note
     const updatedNote: Note = {
       ...note,
-      content,
+      content: content, // This is the full note content
       metadata: {
         ...note.metadata,
-        categories: categoriesArray,
+        categories: selectedCategories,
         actionItems: [...actionItems],
-        // Preserve the medical sections and flag when editing
-        medicalSections: note.metadata.medicalSections,
+        // If it's a medical note, update the sections
+        medicalSections: isMedicalNote ? medicalSections : note.metadata.medicalSections,
         isMedicalNote: note.metadata.isMedicalNote
       }
     };
@@ -81,6 +134,25 @@ const NoteDetail: React.FC<NoteDetailProps> = ({ note, onClose, onUpdate }) => {
 
   const handleRemoveActionItem = (index: number) => {
     setActionItems(actionItems.filter((_, i) => i !== index));
+  };
+
+  // Function to render each editable section
+  const renderEditableSection = (section: MedicalSection, title: string, colorClass: string) => {
+    const sectionContent = medicalSections[section].join('\n');
+    
+    return (
+      <div className="mb-4" key={section}>
+        <div className={`px-3 py-1 rounded-t-md font-medium ${colorClass}`}>
+          {title}
+        </div>
+        <textarea 
+          value={sectionContent}
+          onChange={(e) => handleSectionChange(section, e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-b-md text-black min-h-[100px]"
+          placeholder={`Enter ${title} information here...`}
+        />
+      </div>
+    );
   };
 
   return (
@@ -140,28 +212,71 @@ const NoteDetail: React.FC<NoteDetailProps> = ({ note, onClose, onUpdate }) => {
             )}
           </div>
           
-          {/* Note Content */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Content
-            </label>
-            {editMode ? (
-              <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md h-32 text-black"
-              />
-            ) : (
-              <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-md whitespace-pre-wrap">
-                {note.content}
-              </div>
-            )}
-          </div>
-          
-          {/* Medical Sections - Only displayed for medical notes */}
-          {isMedicalNote && medicalSections && !editMode && (
+          {/* Note Content - Show different UI based on medical note status and edit mode */}
+          {isMedicalNote ? (
+            <>
+              {/* Medical Note - Section-based editing in edit mode */}
+              {editMode ? (
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Edit Medical Sections
+                  </label>
+                  <div className="space-y-4">
+                    {renderEditableSection(
+                      'Wywiad', 
+                      'Wywiad (Medical History)', 
+                      'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
+                    )}
+                    
+                    {renderEditableSection(
+                      'Badanie', 
+                      'Badanie (Examination)', 
+                      'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
+                    )}
+                    
+                    {renderEditableSection(
+                      'Diagnoza', 
+                      'Diagnoza (Diagnosis)', 
+                      'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200'
+                    )}
+                    
+                    {renderEditableSection(
+                      'Zalecenia', 
+                      'Zalecenia (Recommendations)', 
+                      'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200'
+                    )}
+                    
+                    {renderEditableSection(
+                      'Kontekst', 
+                      'Kontekst (Context)', 
+                      'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
+                    )}
+                  </div>
+                </div>
+              ) : (
+                /* In view mode show the MedicalNoteView */
+                <div className="mb-6">
+                  <MedicalNoteView sections={medicalSections} />
+                </div>
+              )}
+            </>
+          ) : (
+            /* For non-medical notes, standard content editing */
             <div className="mb-6">
-              <MedicalNoteView sections={medicalSections} />
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Content
+              </label>
+              {editMode ? (
+                <textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md h-32 text-black"
+                />
+              ) : (
+                <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-md whitespace-pre-wrap">
+                  {note.content}
+                </div>
+              )}
             </div>
           )}
           
@@ -171,13 +286,22 @@ const NoteDetail: React.FC<NoteDetailProps> = ({ note, onClose, onUpdate }) => {
               Categories
             </label>
             {editMode ? (
-              <input
-                type="text"
-                value={categories}
-                onChange={(e) => setCategories(e.target.value)}
-                placeholder="Separate categories with commas"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-black"
-              />
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {VET_CATEGORIES.map(category => (
+                  <div key={category} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id={`category-${category}`}
+                      checked={selectedCategories.includes(category)}
+                      onChange={(e) => handleCategoryChange(category, e.target.checked)}
+                      className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <label htmlFor={`category-${category}`} className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                      {category}
+                    </label>
+                  </div>
+                ))}
+              </div>
             ) : (
               <div className="flex flex-wrap gap-2">
                 {note.metadata.categories.map(category => (
