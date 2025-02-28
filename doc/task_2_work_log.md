@@ -134,3 +134,108 @@ Coś, co mogłoby być dodane:
 **Podsumowanie:**
 
 Wykonanie zmian i testów zajęło mi około 2h.
+
+# Czwarta iteracja - 27.02
+
+Dodałem automatyczną transkrypcję po zakończeniu nagrywania, zaktualizowałem opis projektu, sprawdziłem, czy uda się uruchomić cały projekt “od zera”. Testowałem również różne konfiguracje whisper, ale te co zostały ustawione są i tak okej więc je zostawiam.
+
+Jak na szybki prototyp myśle, że wystarczy.
+
+**Co jeszcze w można poprawić:**
+
+Posprzątanie commitów które wygenerował Agent AI przy swojej pracy - rozdzielanie każdej zmiany na osobny commit daje dobry obraz tego jak Agent pracował, ale na koniec można by te commity pogrupować jakoś z sensem.
+Zdecydowanie można by rozwinąć jeszcze testy aplikacji
+Kod i struktura projektu nie jest do końca uporządkowana
+
+**Uwaga:**
+
+Na początku nie zorientowałem się, że agent zaproponował rozwiązanie z inną wersją Node.js 15, a nie 14. Na działającym projekcie już nie chciałem tego zmieniać, aby nie dokładać sobie dodatkowej pracy, która mogłaby wyniknąć z obniżenia wersji frameworka.
+
+**Podsumowanie:**
+
+Zajęło mi to około 1h.
+
+# Ogólne wnioski na koniec
+
+- Trzeba bardzo dokładnie pisać prompty oraz instrukcję np w README.md aby asystent AI miał jak najmniejsze pole do “swobody” w generowaniu odpowiedzi.
+- Przy drugiej próbie zrobienia takiego zadania skupiłbym sie jeszcze bardziej na dobrym opisaniu problemu i podaniu szczegółowych instrukcji co jak ma być wykonane. Wydaje mi się, że potrzebne jest również rozdzielenie implementacji na mniejsze komponenty, aby mieć większą kontrolę, nad tym co jest tworzone.
+- Iteracyjnie mniejszymi krokami da się poprawić taki zaproponowany prototyp przez AI. Myślę, że na pewno inaczej się pracuje jak zna się dany język programowania na wyższym poziomie, ja znam się na Python a nie na TypeScript.
+- Mając więcej czasu, zaimplementowałbym klasyfikację z wykorzystaniem AI/ML. Propozycje jakby to mogło wyglądać poniżej:
+
+## Rozwiązanie 1: Dopracowany wielojęzyczny model BERT
+
+Wdrożenie specjalistycznego polskiego medycznego modelu BERT (takiego jak HerBERT lub Multilingual BERT) dostrojonego do tekstów medycznych weterynaryjnych.
+
+**Jak to będzie działać:**
+
+- Dostrojenie wstępnie wyszkolonego modelu na zestawie danych polskich notatek weterynaryjnych.
+- Wyszkolenie modelu w celu klasyfikowania zarówno głównych kategorii, jak i sekcji medycznych.
+- Wdrożenie jako usługi API, która działa obok istniejącej usługi Whisper.
+
+**Zalety tego rozwiązania:**
+
+- Bardzo dobre zrozumienie języka polskiego.
+- Uwzględnia semantykę, a nie tylko kluczowe słowa.
+- Można klasyfikować jednocześnie kategorie notatek jak i poszczególne sekcje w samej notatce.
+- Można uogólniać działanie modelu na nowe wyrażenia, których nie ma w danych treningowych.
+- Aplikacja korzysta już z serwera (backend), więc dodanie endpointów API klasyfikacji nie jest problemem z punktu widzenia infrastruktury.
+
+**Wady:**
+
+- Wymaga zebrania i oznaczenia zbioru danych polskich notatek weterynaryjnych.
+- Wyższe wymagania obliczeniowe niż w obecnym rozwiązaniu.
+- Wymagałoby osobnego serwera wnioskowania dla optymalnej wydajności.
+
+## Rozwiązanie 2: Klasyfikacja za pomocą LLM
+
+Użycie API jakiegoś dużego modelu językowego, najlepiej takiego, który był szkolony na polskich danych, aby dobrze rozumiał notatki.
+
+**Jak to będzie działać:**
+
+- Wysłanie transkrypcji notatki do LLM.
+- Utworzenie odpowiedniego szablonu promptu, który zlecałby określenie kategorii notatki oraz sekcji w notatce.
+- Odpowiedź w ustrukturyzowanej formie, aby łatwo i powtarzalnie wyciągnąć informacje o klasyfikacji.
+- Zastosowanie pamięci cache dla często używanych wzorców promptu aby zaoszczędzić na wywołaniach API.
+
+**Zalety tego rozwiązania:**
+
+- Nie ma potrzeby przygotowywania dużej liczby oznaczonych danych do trenowania modelu.
+- Łatwość dostosowania i modyfikowania promptów.
+- Bardzo dobre zrozumienie języka polskiego (jak użyliśmy odpowiedniego modelu).
+- Bardzo dobre zrozumienie całego kontekstu notatki.
+- Zdolność do uzasadnienia decyzji dotyczącej klasyfikacji.
+- Rozwiązanie dobre do szybkiego prototypownia.
+- W sumie biznesowo można to sprzedać jako wersje premium (lepsza klasyfikacja).
+
+**Wady:**
+
+- Trzeba dobrze dostosować prompty i strukture odpowiedzi.
+- Zależność od API, czyli potencjalne ryzyko prywatności danych medycznych (rozwiązaniem tego problemu jest zastosowanie lokalnego modelu, np. BIELIK-11B-v2 - poniższe wady również nie dotyczą używania lokalnego modelu).
+- Używanie API wiąże się z kosztami.
+- Używanie API wiąże się z opóźnieniami.
+- Dostęp do API wymaga dostępu do Internetu.
+
+## Rozwiązanie 3: FastText z osadzeniem słów specyficznych dla domeny.
+
+Użycie funkcji FastText od Facebook z niestandardowymi osadzonymi polskimi słowami z zakresu weterynarii i warstwą klasyfikacyjną.
+
+**Jak to będzie działać:**
+
+- Trenowanie osadzania słów na korpusie poskich tekstów weterynaryjnych.
+- Zbudowanie warstwy klasyfikacji, która przyjmuje te osadzenia jako dane wejściowe.
+- Wdrożenie za pomocą np TensorFlow do wykonywania po stronie klienta.
+
+**Zalety tego rozwiązania:**
+
+- Może działać całkowicie w przeglądarce bez potrzeby dodakowego serwera.
+- Działa dobrze, gdy nie mam dużo danych treningowych (odwrotnie jak w przypatku dostrajania modelu).
+- Bardzo wydajne rozwiązanie.
+- Obsługuje słowa spoza słownika poprzez osadzanie podsłowów.
+- Dostosowane do projektów gdzie skupiamy się na przetwarzaniu po stronie klienta
+
+**Wady:**
+
+- Mniej zaawansowane niż modele ze strukturą transformerów.
+- Wciąż wymagają oznaczania danych szkoleniowych.
+- Ograniczone zrozumienie kontekstu w porównaniu z LLM.
+- Może mieć trudności z bardzo specyficzną dla danej dziedziny terminologią bez obszernego szkolenia.
