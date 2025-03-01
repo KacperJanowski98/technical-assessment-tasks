@@ -118,7 +118,8 @@
   font-size: 12px;
 }
 
-.play-button {
+/* Play button for video cards, not transport controls */
+.video-card .play-button {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -284,11 +285,12 @@
   justify-content: center;
   gap: 12px;
   margin-bottom: 12px;
+  width: 100%;
 }
 
 .transport-button {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 4px;
   display: flex;
   align-items: center;
@@ -297,6 +299,7 @@
   color: #333;
   border: 1px solid #ddd;
   cursor: pointer;
+  margin: 0 2px;
 }
 
 .transport-button:hover:not(:disabled) {
@@ -312,6 +315,14 @@
   background: #007aff;
   color: white;
   border: 1px solid #0066cc;
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin: 0 2px;
 }
 
 .speed-select {
