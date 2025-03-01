@@ -43,8 +43,9 @@ const CanvasEditorComponent: React.FC<CanvasEditorProps> = ({
   const imageRef = useRef<HTMLImageElement>(null);
   const [shortcutsDialogOpen, setShortcutsDialogOpen] = useState(false);
 
-  // Ensure frame has segmentation and masks to prevent errors
-  const safeMasks = frame?.segmentation?.masks || [];
+  // Ensure frame and all properties are properly defined with fallbacks
+  const safeFrame = frame || { id: '', timestamp: 0, thumbnail: '', segmentation: { masks: [] } };
+  const safeMasks = safeFrame.segmentation?.masks || [];
 
   // Resolution management
   const { 
@@ -73,7 +74,7 @@ const CanvasEditorComponent: React.FC<CanvasEditorProps> = ({
     canUndo,
     canRedo
   } = useCanvasEditor(
-    frame.id,
+    safeFrame.id,
     safeMasks,
     displayToProcessing,
     processingToDisplay,
@@ -122,7 +123,7 @@ const CanvasEditorComponent: React.FC<CanvasEditorProps> = ({
       
       // Delete to remove selected mask
       if (e.key === 'Delete' && selectedMaskId) {
-        onDeleteMask(frame.id, selectedMaskId);
+        onDeleteMask(safeFrame.id, selectedMaskId);
         setSelectedMaskId(null);
       }
       
@@ -140,7 +141,7 @@ const CanvasEditorComponent: React.FC<CanvasEditorProps> = ({
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isDrawing, selectedMaskId, frame.id, cancelDrawing, onDeleteMask, setSelectedMaskId, setEditMode]);
+  }, [isDrawing, selectedMaskId, safeFrame.id, cancelDrawing, onDeleteMask, setSelectedMaskId, setEditMode]);
 
   return (
     <div className="canvas-editor" ref={containerRef}>
@@ -216,7 +217,7 @@ const CanvasEditorComponent: React.FC<CanvasEditorProps> = ({
               disabled={!selectedMaskId || isDrawing}
               onClick={() => {
                 if (selectedMaskId) {
-                  onDeleteMask(frame.id, selectedMaskId);
+                  onDeleteMask(safeFrame.id, selectedMaskId);
                   setSelectedMaskId(null);
                 }
               }}
@@ -248,8 +249,8 @@ const CanvasEditorComponent: React.FC<CanvasEditorProps> = ({
         {/* Display frame thumbnail as background */}
         <img
           ref={imageRef}
-          src={frame.thumbnail}
-          alt={`Frame ${frame.id}`}
+          src={safeFrame.thumbnail}
+          alt={`Frame ${safeFrame.id}`}
           style={{
             maxWidth: '100%',
             maxHeight: '100%',
@@ -292,32 +293,39 @@ const CanvasEditorComponent: React.FC<CanvasEditorProps> = ({
             <p className="no-masks">No masks created yet. Use the drawing tool to create masks.</p>
           ) : (
             <ul>
-              {safeMasks.map(mask => (
-                <li 
-                  key={mask.id}
-                  className={mask.id === selectedMaskId ? 'selected' : ''}
-                  onClick={() => {
-                    if (isDrawing) cancelDrawing();
-                    setSelectedMaskId(mask.id);
-                  }}
-                >
-                  <div 
-                    className="mask-color" 
-                    style={{ background: mask.color || '#33aaff' }}
-                  />
-                  <span className="mask-label">{mask.label || `Mask ${mask.id.slice(0, 4)}`}</span>
-                  
-                  <button 
-                    title={mask.visible ? 'Hide Mask' : 'Show Mask'}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onToggleMaskVisibility(frame.id, mask.id);
+              {safeMasks.map(mask => {
+                // Ensure mask is valid with fallback values
+                const safeMask = mask || { id: '', points: [], visible: true };
+                const safeId = safeMask.id || '';
+                const maskLabel = safeMask.label || `Mask ${safeId.substring(0, 4) || ''}`;
+                
+                return (
+                  <li 
+                    key={safeId}
+                    className={safeId === selectedMaskId ? 'selected' : ''}
+                    onClick={() => {
+                      if (isDrawing) cancelDrawing();
+                      setSelectedMaskId(safeId);
                     }}
                   >
-                    {mask.visible ? <FaEye /> : <FaEyeSlash />}
-                  </button>
-                </li>
-              ))}
+                    <div 
+                      className="mask-color" 
+                      style={{ background: safeMask.color || '#33aaff' }}
+                    />
+                    <span className="mask-label">{maskLabel}</span>
+                    
+                    <button 
+                      title={safeMask.visible ? 'Hide Mask' : 'Show Mask'}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleMaskVisibility(safeFrame.id, safeId);
+                      }}
+                    >
+                      {safeMask.visible ? <FaEye /> : <FaEyeSlash />}
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>
