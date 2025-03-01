@@ -43,6 +43,9 @@ const CanvasEditorComponent: React.FC<CanvasEditorProps> = ({
   const imageRef = useRef<HTMLImageElement>(null);
   const [shortcutsDialogOpen, setShortcutsDialogOpen] = useState(false);
 
+  // Ensure frame has segmentation and masks to prevent errors
+  const safeMasks = frame?.segmentation?.masks || [];
+
   // Resolution management
   const { 
     displayResolution,
@@ -71,7 +74,7 @@ const CanvasEditorComponent: React.FC<CanvasEditorProps> = ({
     canRedo
   } = useCanvasEditor(
     frame.id,
-    frame.segmentation.masks,
+    safeMasks,
     displayToProcessing,
     processingToDisplay,
     onUpdateMask,
@@ -285,11 +288,11 @@ const CanvasEditorComponent: React.FC<CanvasEditorProps> = ({
         {/* Scrollable mask list */}
         <div className="mask-list">
           <h3>Mask List</h3>
-          {frame.segmentation.masks.length === 0 ? (
+          {safeMasks.length === 0 ? (
             <p className="no-masks">No masks created yet. Use the drawing tool to create masks.</p>
           ) : (
             <ul>
-              {frame.segmentation.masks.map(mask => (
+              {safeMasks.map(mask => (
                 <li 
                   key={mask.id}
                   className={mask.id === selectedMaskId ? 'selected' : ''}
