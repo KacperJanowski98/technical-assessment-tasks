@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Frame, Resolution, Point, Mask, EditMode } from '../types';
 import { useCanvasEditor } from '../hooks/useCanvasEditor';
 import { useResolutionManager } from '../hooks/useResolutionManager';
@@ -17,6 +17,8 @@ import {
   FaHandPaper,
   FaMousePointer
 } from 'react-icons/fa';
+import ShortcutsDialog from './ShortcutsDialog';
+import './ShortcutsDialog.css';
 
 interface CanvasEditorProps {
   frame: Frame;
@@ -39,6 +41,7 @@ const CanvasEditorComponent: React.FC<CanvasEditorProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
+  const [shortcutsDialogOpen, setShortcutsDialogOpen] = useState(false);
 
   // Resolution management
   const { 
@@ -125,6 +128,11 @@ const CanvasEditorComponent: React.FC<CanvasEditorProps> = ({
       if (e.key === '2') setEditMode('draw');
       if (e.key === '3') setEditMode('vertex');
       if (e.key === '4') setEditMode('edge');
+
+      // Show shortcuts dialog with '?'
+      if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+        setShortcutsDialogOpen(true);
+      }
     };
     
     window.addEventListener('keydown', handleKeyDown);
@@ -331,11 +339,21 @@ const CanvasEditorComponent: React.FC<CanvasEditorProps> = ({
         </div>
         
         <div className="keyboard-shortcuts">
-          <button className="shortcuts-button" title="Keyboard Shortcuts">
+          <button 
+            className="shortcuts-button" 
+            title="Keyboard Shortcuts (Press ?)"
+            onClick={() => setShortcutsDialogOpen(true)}
+          >
             ⌨️ Shortcuts
           </button>
         </div>
       </div>
+
+      {/* Shortcuts Dialog */}
+      <ShortcutsDialog 
+        isOpen={shortcutsDialogOpen} 
+        onClose={() => setShortcutsDialogOpen(false)} 
+      />
     </div>
   );
 };
