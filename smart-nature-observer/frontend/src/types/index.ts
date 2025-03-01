@@ -73,3 +73,19 @@ export interface ResolutionManagerProps {
   displayResolution: Resolution;
   onDisplayResolutionChange: (resolution: Resolution) => void;
 }
+
+// New type for history management
+export type HistoryAction = {
+  type: 'CREATE_MASK' | 'UPDATE_MASK' | 'DELETE_MASK';
+  maskId: string | null;
+  previousPoints: Point[] | null;
+  newPoints: Point[] | null;
+};
+
+// New enum for edit modes
+export enum EditMode {
+  Select = 'select',
+  Draw = 'draw',
+  Vertex = 'vertex',
+  Edge = 'edge'
+}
