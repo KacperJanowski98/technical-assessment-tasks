@@ -98,7 +98,7 @@ export const useCanvasEditor = (
     
     const action = history[historyIndex];
     
-    if (action.type === 'UPDATE_MASK' && action.previousPoints) {
+    if (action.type === 'UPDATE_MASK' && action.previousPoints && action.maskId !== null) {
       onUpdateMask(frameId, action.maskId, action.previousPoints);
     }
     
@@ -111,7 +111,7 @@ export const useCanvasEditor = (
     
     const action = history[historyIndex + 1];
     
-    if (action.type === 'UPDATE_MASK' && action.newPoints) {
+    if (action.type === 'UPDATE_MASK' && action.newPoints && action.maskId !== null) {
       onUpdateMask(frameId, action.maskId, action.newPoints);
     }
     
