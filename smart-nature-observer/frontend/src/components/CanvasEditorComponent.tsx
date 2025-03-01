@@ -57,10 +57,33 @@ const CanvasEditorComponent: React.FC<CanvasEditorProps> = ({
   // Set canvas dimensions when display resolution changes
   useEffect(() => {
     if (canvasRef.current) {
-      canvasRef.current.width = displayResolution.width;
-      canvasRef.current.height = displayResolution.height;
+      // Use same aspect ratio as original image
+      const aspectRatio = originalResolution.width / originalResolution.height;
+      
+      // Calculate new dimensions that fit in the container and maintain aspect ratio
+      let width, height;
+      const canvasContainer = canvasRef.current.parentElement;
+      
+      if (canvasContainer) {
+        const containerWidth = canvasContainer.clientWidth;
+        const containerHeight = canvasContainer.clientHeight;
+        
+        if (containerWidth / containerHeight > aspectRatio) {
+          // Container is wider than needed
+          height = containerHeight;
+          width = height * aspectRatio;
+        } else {
+          // Container is taller than needed
+          width = containerWidth;
+          height = width / aspectRatio;
+        }
+        
+        // Set the canvas dimensions
+        canvasRef.current.width = width;
+        canvasRef.current.height = height;
+      }
     }
-  }, [displayResolution]);
+  }, [displayResolution, originalResolution]);
 
   // Handle keyboard events for tool operations
   useEffect(() => {
@@ -83,25 +106,26 @@ const CanvasEditorComponent: React.FC<CanvasEditorProps> = ({
 
   return (
     <div className="canvas-editor" ref={containerRef}>
-      <div 
-        className="canvas-container"
-        style={{
-          width: displayResolution.width,
-          height: displayResolution.height,
-          position: 'relative'
-        }}
-      >
+      {/* Header */}
+      <div className="frame-counter">
+        Segmentation Editor
+      </div>
+      
+      {/* Fixed height canvas container */}
+      <div className="canvas-container">
         {/* Display frame thumbnail as background */}
         <img
           ref={imageRef}
           src={frame.thumbnail}
           alt={`Frame ${frame.id}`}
           style={{
-            width: '100%',
-            height: '100%',
+            maxWidth: '100%',
+            maxHeight: '100%',
             position: 'absolute',
-            top: 0,
-            left: 0
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            objectFit: 'contain'
           }}
         />
         
@@ -116,55 +140,63 @@ const CanvasEditorComponent: React.FC<CanvasEditorProps> = ({
           onDoubleClick={handleDoubleClick}
           style={{
             position: 'absolute',
-            top: 0,
-            left: 0,
-            cursor: isDrawing ? 'crosshair' : 'default'
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            cursor: isDrawing ? 'crosshair' : 'default',
+            maxWidth: '100%',
+            maxHeight: '100%',
+            objectFit: 'contain'
           }}
         />
       </div>
       
-      <div className="editor-tools">
-        <div className="tools-panel">
-          <button 
-            title="Draw Mask (then double-click to finish)"
-            className={isDrawing ? 'active' : ''}
-            onClick={() => {
-              if (!isDrawing) {
+      {/* Controls area with tools and scrollable mask list */}
+      <div className="editor-controls">
+        <div className="editor-tools">
+          <div className="tools-panel">
+            <button 
+              title="Draw Mask (then double-click to finish)"
+              className={isDrawing ? 'active' : ''}
+              onClick={() => {
+                if (!isDrawing) {
+                  setSelectedMaskId(null);
+                } else {
+                  cancelDrawing();
+                }
+              }}
+            >
+              <FaPaintBrush />
+            </button>
+            
+            <button 
+              title="Select Mask"
+              disabled={isDrawing}
+              className={!isDrawing && !selectedMaskId ? 'active' : ''}
+              onClick={() => {
+                if (isDrawing) cancelDrawing();
                 setSelectedMaskId(null);
-              } else {
-                cancelDrawing();
-              }
-            }}
-          >
-            <FaPaintBrush />
-          </button>
-          
-          <button 
-            title="Select Mask"
-            disabled={isDrawing}
-            className={!isDrawing && !selectedMaskId ? 'active' : ''}
-            onClick={() => {
-              if (isDrawing) cancelDrawing();
-              setSelectedMaskId(null);
-            }}
-          >
-            <FaCrosshairs />
-          </button>
-          
-          <button 
-            title="Delete Selected Mask"
-            disabled={!selectedMaskId || isDrawing}
-            onClick={() => {
-              if (selectedMaskId) {
-                onDeleteMask(frame.id, selectedMaskId);
-                setSelectedMaskId(null);
-              }
-            }}
-          >
-            <FaTrash />
-          </button>
+              }}
+            >
+              <FaCrosshairs />
+            </button>
+            
+            <button 
+              title="Delete Selected Mask"
+              disabled={!selectedMaskId || isDrawing}
+              onClick={() => {
+                if (selectedMaskId) {
+                  onDeleteMask(frame.id, selectedMaskId);
+                  setSelectedMaskId(null);
+                }
+              }}
+            >
+              <FaTrash />
+            </button>
+          </div>
         </div>
         
+        {/* Scrollable mask list */}
         <div className="mask-list">
           <h3>Masks</h3>
           {frame.segmentation.masks.length === 0 ? (
@@ -202,6 +234,7 @@ const CanvasEditorComponent: React.FC<CanvasEditorProps> = ({
         </div>
       </div>
       
+      {/* Status bar */}
       <div className="editor-status">
         {isDrawing ? (
           <span className="status-drawing">

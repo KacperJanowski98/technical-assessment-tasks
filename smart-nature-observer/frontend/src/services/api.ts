@@ -37,7 +37,37 @@ export const getAllVideos = async (): Promise<Video[]> => {
 
 export const getVideoById = async (videoId: string): Promise<Video> => {
   const response = await api.get(`/videos/${videoId}`);
-  return response.data;
+  
+  // Convert metadata structure if needed
+  const data = response.data;
+  
+  // Make sure we have proper structure
+  if (data) {
+    // Add title from filename if not present
+    if (!data.title && data.metadata && data.metadata.filename) {
+      data.title = data.metadata.filename;
+    }
+    
+    // Extract resolution from metadata if needed
+    if (!data.resolution && data.metadata && data.metadata.resolution) {
+      data.resolution = data.metadata.resolution;
+    }
+    
+    // Make sure frames have proper structure
+    if (data.frames) {
+      data.frames = data.frames.map((frame: any) => {
+        if (!frame.segmentation) {
+          frame.segmentation = { masks: [] };
+        }
+        if (!frame.segmentation.masks) {
+          frame.segmentation.masks = [];
+        }
+        return frame;
+      });
+    }
+  }
+  
+  return data;
 };
 
 export const getFrameAtTimestamp = async (videoId: string, timestamp: number): Promise<Frame> => {

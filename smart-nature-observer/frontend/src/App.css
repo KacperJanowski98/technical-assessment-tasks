@@ -176,8 +176,8 @@
 .video-editor {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 200px);
-  min-height: 600px;
+  height: calc(100vh - 150px);
+  min-height: 700px;
   background: white;
   border-radius: 8px;
   overflow: hidden;
@@ -208,27 +208,36 @@
   display: flex;
   flex: 1;
   overflow: hidden;
+  min-height: 70%;
+  justify-content: space-between;
 }
 
 .video-processor-section {
-  width: 30%;
-  min-width: 300px;
+  width: 40%;
+  min-width: 350px;
   border-right: 1px solid #eee;
   overflow-y: auto;
-}
-
-.canvas-editor-section {
-  flex: 1;
-  min-width: 0;
   display: flex;
   flex-direction: column;
 }
 
+.canvas-editor-section {
+  width: 40%;
+  min-width: 350px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #eee;
+}
+
 .editor-sidebar {
-  width: 250px;
+  min-width: 250px;
   border-left: 1px solid #eee;
-  padding: 16px;
+  padding: 10px;
   overflow-y: auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  background: #f5f5f7;
 }
 
 /* Video Processor Component Styles */
@@ -236,12 +245,21 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 400px;
 }
 
 .video-display {
-  flex: 1;
-  min-height: 200px;
+  height: 250px;
   background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.current-frame {
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -250,44 +268,135 @@
 .current-frame img {
   max-width: 100%;
   max-height: 100%;
+  object-fit: contain;
 }
 
 .video-controls {
-  padding: 16px;
+  padding: 10px;
   border-bottom: 1px solid #eee;
+  flex-shrink: 0;
+  background: #f9f9f9;
 }
 
 .transport-controls {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 16px;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.transport-button {
+  width: 36px;
+  height: 36px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f0f0;
+  color: #333;
+  border: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.transport-button:hover:not(:disabled) {
+  background: #e0e0e0;
+}
+
+.transport-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.transport-button.play-button {
+  background: #007aff;
+  color: white;
+  border: 1px solid #0066cc;
+}
+
+.speed-select {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 4px 8px;
+  background: #fff;
+  font-size: 12px;
 }
 
 .timeline-controls {
   display: flex;
   align-items: center;
   gap: 8px;
+  width: 100%;
+}
+
+.time-display, .duration-display {
+  font-size: 12px;
+  font-family: monospace;
+  color: #666;
+  width: 45px;
 }
 
 .time-slider {
   flex: 1;
+  height: 10px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: #ddd;
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+  margin: 0 5px;
+}
+
+.time-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #007aff;
+  cursor: pointer;
+}
+
+.time-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #007aff;
+  cursor: pointer;
+  border: none;
 }
 
 .frame-counter {
   text-align: center;
   font-size: 12px;
-  color: #666;
-  margin-top: 8px;
+  font-weight: bold;
+  color: #333;
+  padding: 6px;
+  background: #f0f0f0;
+  flex-shrink: 0;
 }
 
 .frame-thumbnails {
-  padding: 16px;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-  gap: 8px;
-  overflow-y: auto;
-  max-height: 200px;
+  padding: 8px;
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 6px;
+  height: 80px;
+  flex-shrink: 0;
+  border-bottom: 1px solid #eee;
+  background: #f0f0f0;
+}
+
+.no-frames-message {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 20px;
+  background: #f5f5f7;
+  border-radius: 4px;
+  color: #666;
+  font-style: italic;
 }
 
 .frame-thumbnail {
@@ -296,15 +405,20 @@
   border: 2px solid transparent;
   border-radius: 4px;
   overflow: hidden;
+  flex: 0 0 auto;
+  width: 100px;
+  height: 60px;
+  background: #000;
 }
 
 .frame-thumbnail.selected {
   border-color: #007aff;
+  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.5);
 }
 
 .frame-thumbnail img {
   width: 100%;
-  aspect-ratio: 16/9;
+  height: 100%;
   object-fit: cover;
 }
 
@@ -322,24 +436,39 @@
 /* Canvas Editor Component Styles */
 .canvas-editor {
   display: flex;
+  flex-direction: column;
   height: 100%;
 }
 
 .canvas-container {
-  flex: 1;
-  margin: 16px;
+  width: 100%;
+  height: 250px; /* Same height as video-display, FIXED height */
+  flex-shrink: 0; /* Prevent shrinking */
+  margin: 0;
   position: relative;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.editor-controls {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
 }
 
 .editor-tools {
   width: 100px;
-  border-left: 1px solid #eee;
   padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 24px;
+  flex-shrink: 0;
+  border-right: 1px solid #eee;
+  background: #f9f9f9;
 }
 
 .tools-panel {
@@ -366,15 +495,25 @@
 .mask-list {
   flex: 1;
   overflow-y: auto;
+  min-height: 0; /* Important for flex child scrolling */
+  background: white;
+  padding: 8px;
+  flex-grow: 1;
 }
 
 .mask-list h3 {
   font-size: 14px;
   margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #eee;
+  position: sticky;
+  top: 0;
+  background: white;
 }
 
 .mask-list ul {
   list-style: none;
+  padding: 0;
 }
 
 .mask-list li {
@@ -432,39 +571,46 @@
   background: #f5f5f7;
   border-top: 1px solid #eee;
   font-size: 12px;
+  flex-shrink: 0;
+  height: 36px;
 }
 
-.video-info-panel, .segmentation-info {
-  margin-bottom: 24px;
+.video-info-panel, .segmentation-info, .instructions {
+  flex: 1;
+  min-width: 180px;
+  margin: 0 5px;
+  padding: 8px;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  font-size: 12px;
+  max-height: 200px;
+  overflow-y: auto;
 }
 
-.video-info-panel h3, .segmentation-info h3 {
-  font-size: 16px;
-  margin-bottom: 8px;
-}
-
-.video-info-panel ul, .segmentation-info ul {
-  list-style: none;
+.video-info-panel h3, .segmentation-info h3, .instructions h4 {
   font-size: 14px;
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #eee;
+  color: #007aff;
+}
+
+.video-info-panel ul, .segmentation-info ul, .instructions ul {
+  list-style: none;
+  font-size: 12px;
+  padding: 0;
 }
 
 .video-info-panel li, .segmentation-info li {
   margin-bottom: 4px;
-}
-
-.instructions {
-  margin-top: 24px;
-}
-
-.instructions h4 {
-  font-size: 14px;
-  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
 }
 
 .instructions ul {
-  font-size: 12px;
-  padding-left: 16px;
   list-style-type: disc;
+  padding-left: 16px;
 }
 
 .instructions li {

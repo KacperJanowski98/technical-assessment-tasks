@@ -37,7 +37,7 @@ export const useVideoProcessor = (videoId?: string) => {
 
   // Select a frame by ID
   const selectFrame = (frameId: string) => {
-    if (!video) return;
+    if (!video || !video.frames) return;
     
     const frame = video.frames.find(f => f.id === frameId);
     if (frame) {
@@ -57,6 +57,10 @@ export const useVideoProcessor = (videoId?: string) => {
       // Update the frames array in the video object if needed
       setVideo(prevVideo => {
         if (!prevVideo) return null;
+        
+        if (!prevVideo.frames) {
+          return { ...prevVideo, frames: [frame] };
+        }
         
         const frameIndex = prevVideo.frames.findIndex(f => f.id === frame.id);
         if (frameIndex >= 0) {
@@ -98,7 +102,7 @@ export const useVideoProcessor = (videoId?: string) => {
       
       // Update the frames array in the video object
       setVideo(prevVideo => {
-        if (!prevVideo) return null;
+        if (!prevVideo || !prevVideo.frames) return prevVideo;
         
         return {
           ...prevVideo,
@@ -126,7 +130,7 @@ export const useVideoProcessor = (videoId?: string) => {
 
   // Update a mask in a frame
   const updateMask = async (frameId: string, maskId: string, points: { x: number; y: number }[]) => {
-    if (!videoId || !video) return;
+    if (!videoId || !video || !video.frames) return;
     
     setIsLoading(true);
     try {
@@ -157,7 +161,7 @@ export const useVideoProcessor = (videoId?: string) => {
       }
       
       setVideo(prevVideo => {
-        if (!prevVideo) return null;
+        if (!prevVideo || !prevVideo.frames) return prevVideo;
         
         return {
           ...prevVideo,
@@ -176,7 +180,7 @@ export const useVideoProcessor = (videoId?: string) => {
 
   // Delete a mask from a frame
   const deleteMask = async (frameId: string, maskId: string) => {
-    if (!videoId) return;
+    if (!videoId || !video || !video.frames) return;
     
     setIsLoading(true);
     try {
@@ -199,7 +203,7 @@ export const useVideoProcessor = (videoId?: string) => {
       
       // Update the video state
       setVideo(prevVideo => {
-        if (!prevVideo) return null;
+        if (!prevVideo || !prevVideo.frames) return prevVideo;
         
         return {
           ...prevVideo,
@@ -227,7 +231,7 @@ export const useVideoProcessor = (videoId?: string) => {
 
   // Toggle mask visibility
   const toggleMaskVisibility = async (frameId: string, maskId: string) => {
-    if (!videoId || !video) return;
+    if (!videoId || !video || !video.frames) return;
     
     try {
       // Find the frame and toggle the mask visibility
@@ -255,7 +259,7 @@ export const useVideoProcessor = (videoId?: string) => {
       }
       
       setVideo(prevVideo => {
-        if (!prevVideo) return null;
+        if (!prevVideo || !prevVideo.frames) return prevVideo;
         
         return {
           ...prevVideo,

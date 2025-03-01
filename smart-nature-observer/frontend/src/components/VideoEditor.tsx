@@ -79,11 +79,32 @@ const VideoEditor: React.FC<VideoEditorProps> = ({ videoId, onBack }) => {
     );
   }
 
-  // Processing vs original resolution
-  const processingResolution: Resolution = {
-    width: 720, // Assuming default processing width from backend
-    height: 480  // Assuming default processing height from backend
+  // Default resolution if not available from video
+  const defaultResolution: Resolution = {
+    width: 720,
+    height: 480
   };
+  
+  // Processing resolution 
+  const processingResolution: Resolution = {
+    width: 720,
+    height: 480
+  };
+  
+  // Make sure video has a resolution property
+  if (!video.resolution) {
+    video.resolution = defaultResolution;
+  }
+  
+  // Make sure currentFrame has segmentation data
+  if (!currentFrame.segmentation) {
+    currentFrame.segmentation = { masks: [] };
+  }
+  
+  // Make sure segmentation has a masks property
+  if (!currentFrame.segmentation.masks) {
+    currentFrame.segmentation.masks = [];
+  }
 
   return (
     <div className="video-editor" ref={containerRef}>
@@ -92,7 +113,7 @@ const VideoEditor: React.FC<VideoEditorProps> = ({ videoId, onBack }) => {
           <FaArrowLeft /> Back to Videos
         </button>
         
-        <h1>{video.title}</h1>
+        <h1>{video.title || video.filename || `Video ${video.id.substring(0, 8)}`}</h1>
         
         <button 
           className="export-button"
@@ -130,31 +151,32 @@ const VideoEditor: React.FC<VideoEditorProps> = ({ videoId, onBack }) => {
         <div className="video-info-panel">
           <h3>Video Information</h3>
           <ul>
-            <li><strong>Duration:</strong> {Math.floor(video.duration / 60)}:{Math.floor(video.duration % 60).toString().padStart(2, '0')}</li>
-            <li><strong>Resolution:</strong> {video.resolution.width}x{video.resolution.height}</li>
-            <li><strong>Total Frames:</strong> {video.frames.length}</li>
-            <li><strong>FPS:</strong> {video.fps}</li>
-            <li><strong>Current Time:</strong> {Math.floor(currentFrame.timestamp / 60)}:{Math.floor(currentFrame.timestamp % 60).toString().padStart(2, '0')}</li>
+            <li><strong>Duration:</strong> <span>{Math.floor(video.duration / 60)}:{Math.floor(video.duration % 60).toString().padStart(2, '0')}</span></li>
+            <li><strong>Resolution:</strong> <span>{video.resolution.width}x{video.resolution.height}</span></li>
+            <li><strong>Total Frames:</strong> <span>{video.frames ? video.frames.length : 0}</span></li>
+            <li><strong>FPS:</strong> <span>{video.fps}</span></li>
+            <li><strong>Current Time:</strong> <span>{Math.floor(currentFrame.timestamp / 60)}:{Math.floor(currentFrame.timestamp % 60).toString().padStart(2, '0')}</span></li>
           </ul>
         </div>
         
         <div className="segmentation-info">
           <h3>Segmentation Info</h3>
           <ul>
-            <li><strong>Current Masks:</strong> {currentFrame.segmentation.masks.length}</li>
-            <li><strong>Processing Resolution:</strong> {processingResolution.width}x{processingResolution.height}</li>
+            <li><strong>Current Masks:</strong> <span>{currentFrame.segmentation.masks.length}</span></li>
+            <li><strong>Processing Resolution:</strong> <span>{processingResolution.width}x{processingResolution.height}</span></li>
+            <li><strong>Status:</strong> <span>{video.status || "Ready"}</span></li>
           </ul>
-          
-          <div className="instructions">
-            <h4>Instructions</h4>
-            <ul>
-              <li>Use the canvas editor to create and edit masks</li>
-              <li>Double-click to complete drawing a mask</li>
-              <li>Click on a mask to select it for editing</li>
-              <li>Press Delete to remove the selected mask</li>
-              <li>Export when finished to save your segmentation</li>
-            </ul>
-          </div>
+        </div>
+        
+        <div className="instructions">
+          <h4>Instructions</h4>
+          <ul>
+            <li>Use the canvas editor to create and edit masks</li>
+            <li>Double-click to complete drawing a mask</li>
+            <li>Click on a mask to select it for editing</li>
+            <li>Press Delete to remove the selected mask</li>
+            <li>Export when finished to save your segmentation</li>
+          </ul>
         </div>
       </div>
     </div>

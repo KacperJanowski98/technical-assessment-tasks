@@ -85,9 +85,9 @@ const VideoList: React.FC<VideoListProps> = ({ onVideoSelect }) => {
         {videos.map(video => (
           <div 
             key={video.id}
-            className={`video-card ${video.processingStatus}`}
+            className={`video-card ${video.status === 'ready' || video.processingStatus === 'complete' ? 'complete' : 'processing'}`}
             onClick={() => {
-              if (video.processingStatus === 'complete') {
+              if (video.status === 'ready' || video.processingStatus === 'complete') {
                 onVideoSelect(video.id);
               }
             }}
@@ -104,14 +104,14 @@ const VideoList: React.FC<VideoListProps> = ({ onVideoSelect }) => {
               <span className="video-duration">{formatDuration(video.duration)}</span>
               
               {/* Show play button for completed videos */}
-              {video.processingStatus === 'complete' && (
+              {(video.status === 'ready' || video.processingStatus === 'complete') && (
                 <div className="play-button">
                   <FaPlay />
                 </div>
               )}
               
               {/* Show processing indicator */}
-              {video.processingStatus === 'processing' && (
+              {(video.status === 'processing' || video.processingStatus === 'processing') && (
                 <div className="processing-indicator">
                   <FaSpinner className="spinner" />
                   <span>Processing</span>
@@ -120,7 +120,7 @@ const VideoList: React.FC<VideoListProps> = ({ onVideoSelect }) => {
             </div>
             
             <div className="video-info">
-              <h3 className="video-title">{video.title}</h3>
+              <h3 className="video-title">{video.title || video.filename || `Video ${video.id.substring(0, 8)}`}</h3>
               
               <div className="video-details">
                 <span className="video-resolution">
@@ -128,7 +128,7 @@ const VideoList: React.FC<VideoListProps> = ({ onVideoSelect }) => {
                 </span>
                 
                 <span className="video-frames">
-                  {video.frames.length} frames
+                  {video.frames && video.frames.length ? video.frames.length : 0} frames
                 </span>
               </div>
             </div>

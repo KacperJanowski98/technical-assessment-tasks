@@ -28,14 +28,27 @@ export interface Frame {
   segmentation: Segmentation;
 }
 
-export interface Video {
+export interface VideoMetadata {
   id: string;
-  title: string;
+  filename: string;
   duration: number;
   resolution: Resolution;
   fps: number;
-  frames: Frame[];
-  processingStatus: 'pending' | 'processing' | 'complete' | 'error';
+  status: string;
+  createdAt: string;
+}
+
+export interface Video {
+  id: string;
+  title?: string;
+  filename?: string;
+  duration: number;
+  resolution: Resolution;
+  fps: number;
+  frames?: Frame[];
+  processingStatus?: 'pending' | 'processing' | 'complete' | 'error';
+  status?: string;
+  createdAt?: string;
 }
 
 export interface CanvasEditorProps {
