@@ -38,7 +38,6 @@
 - `src/components/ShortcutsDialog.tsx`: New component for keyboard shortcuts help
 - `src/components/ShortcutsDialog.css`: Styles for shortcuts dialog
 - `doc/mask-editing-features.md`: Documentation for new features
-- `examples/mask-editing-examples.js`: Example code for testing functionality
 
 ## Technical Implementation
 
