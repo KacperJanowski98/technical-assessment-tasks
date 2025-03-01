@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Video, Frame } from '../types';
-import { FaPlay, FaPause, FaStepForward, FaStepBackward } from 'react-icons/fa';
+import { FaPlay, FaPause, FaArrowRight, FaArrowLeft, FaForward, FaBackward } from 'react-icons/fa';
 
 interface VideoProcessorProps {
   video: Video;
@@ -108,7 +108,7 @@ const VideoProcessorComponent: React.FC<VideoProcessorProps> = ({
             disabled={!hasFrames || currentFrameIndex <= 0}
             title="Previous Frame"
           >
-            <FaStepBackward />
+            <FaArrowLeft size={18} />
           </button>
           
           <button 
@@ -116,7 +116,7 @@ const VideoProcessorComponent: React.FC<VideoProcessorProps> = ({
             onClick={togglePlayback}
             title="Play/Pause"
           >
-            {isPlaying ? <FaPause /> : <FaPlay />}
+            {isPlaying ? <FaPause size={18} /> : <FaPlay size={18} />}
           </button>
           
           <button 
@@ -125,7 +125,7 @@ const VideoProcessorComponent: React.FC<VideoProcessorProps> = ({
             disabled={!hasFrames || currentFrameIndex >= video.frames!.length - 1}
             title="Next Frame"
           >
-            <FaStepForward />
+            <FaArrowRight size={18} />
           </button>
           
           <select 
